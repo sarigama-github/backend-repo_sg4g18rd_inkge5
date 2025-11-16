@@ -12,37 +12,24 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict, Any
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Template(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Templates for legal documents (requests, indictments, etc.)
+    Collection name: "template"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    title: str = Field(..., description="Template title")
+    body: str = Field(..., description="Template text with placeholders like {{ case_number }}")
+    category: Optional[str] = Field(None, description="Category, e.g., organizations, court, bank")
+    type: Optional[str] = Field("request", description="Type: request | indictment | other")
 
-class Product(BaseModel):
+class Generateddoc(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Rendered documents based on templates
+    Collection name: "generateddoc"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
-
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+    template_id: Optional[str] = Field(None, description="Source template id")
+    title: str = Field(..., description="Document title")
+    rendered: str = Field(..., description="Rendered plain text content")
+    data: Dict[str, Any] = Field(default_factory=dict, description="Data used for rendering")
